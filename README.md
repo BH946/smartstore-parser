@@ -16,7 +16,10 @@
 * `selenium : 4.9.0`
   * 셀레니움3 -> 셀레니움4 를 사용! (**크롬드라이버 설치 자동으로 변경!!**)
   * 업그레이드 : `conda install -c conda-forge selenium`
+  * 크롬드라이버 자동 : `conda install -c conda-forge webdriver-manager`
+  * `webdriver-manager : 4.0.1`
 
+* `pymysql : 1.0.2`
 * `lxml : 4.9.3`
 * `openpyxl : 3.0.10`
 * `pandas : 2.0.3`
