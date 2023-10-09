@@ -2,4 +2,4 @@
 
 logs/
 
-db_proc.py
+src/db/db_proc.py
