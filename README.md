@@ -1,6 +1,6 @@
 # smartstore-parser
 
-**빠르고 잘 동작하는 "파서"를 만드는 프로젝트 + 스마트스토어 자동 재고관리 구현**
+**잘 동작하는 "파서" + 스마트스토어 재고관리 편의 프로젝트**
 
 <br><br>
 
@@ -9,17 +9,15 @@
 **아나콘다 사용 -> conda 명령어 사용(conda list, conda install... 등)**
 
 * `python : 3.11.5`
-
 * `beautifulsoup4 : 4.12.2(최신)`
-
 * `requests : 2.31.0`
 * `selenium : 4.9.0`
   * 셀레니움3 -> 셀레니움4 를 사용! (**크롬드라이버 설치 자동으로 변경!!**)
   * 업그레이드 : `conda install -c conda-forge selenium`
   * 크롬드라이버 자동 : `conda install -c conda-forge webdriver-manager`
   * `webdriver-manager : 4.0.1`
-
 * `pymysql : 1.0.2`
+* `smtplib : 기본 내장 라이브러리`
 * `lxml : 4.9.3`
 * `openpyxl : 3.0.10`
 * `pandas : 2.0.3`
@@ -49,42 +47,11 @@
 
 
 
+
+
+옛날거 아래.
+
 ## 필요한 지식
-
-**깃허브 액션의 경로를 자세히 모르기 때문에 `os 라이브러리` 를 활용해서 경로를 다룬다.**
-
-* `os.getcwd(), os.chdir('경로지정')` 대표적으로 이 2개를 활용할 수 있다.
-
-
-
-**또한 파일 구조를 세분화 하며, 그 파일들에 공통으로 사용할 변수들의 경우 `.env` 에 저장해서 다룬다.**
-
-* `load_dotenv()` 를 `main.py` 에 작성해서 `.env` 파일을 로드하여 어디서든 사용하게 만든다.
-* `.env` 파일을 코드 수행중에 getter(), setter() 을 할 수 있다.
-  * 실제 로컬의 `.env`파일의 내용이 setter()를 해도 변하진 않지만 코드 사용중에선 변화한다.
-  * setter() 방식 - `os.environ["pathDir"] = "12345"`
-    getter() 방식 - `os.environ.get("pathDir")` 
-* git에 안올릴려면 `.gitignore` 파일에 `.env` 코드 한줄 추가!
-
-
-
-**셀레니움에서 headless 사용 시 다운로드 하려면 반드시 설정해줘야 할게 있다.   
-`백그라운드에서 다운`받을 경로를 꼭 잘 설정해줘야 에러가 발생하지 않는다.**
-
-* 추가로 내 생각이지만 분명 os 활용하면 경로들 잘 먹히는데, 아래 함수 만든거에서는  
-  이상하게 경로를 다른걸로 지정해도 안먹히고 처음 초기 경로로 고정이 되어있음 ..
-* 그래서 그냥 기본 경로로 온다는걸 인지하고 사용
-
-```python
-# downloadPath 부분의 경로를 꼭 잘 설정해줄것
-def enable_download(driver): 
-  print('백그라운드 다운로드 기능 활성화')
-  driver.command_executor._commands["send_command"] = ("POST", '/session/$sessionId/chromium/send_command')
-  params = {'cmd': 'Page.setDownloadBehavior', 'params': {'behavior': 'allow', 'downloadPath': os.getcwd()}}
-  driver.execute("send_command", params)
-```
-
-
 
 **`셀레니움` 에서는 BMP이상 범위의 문자들(예:이모티콘)을 인식하지 못한다.(지원하지 않음)  
 따라서 이들을 제거해서 사용해줘야 `send_keys` 가 가능하다.**
@@ -105,15 +72,21 @@ only_BMP_pattern = re.compile("["
 print(only_BMP_pattern.sub(r'', text))# BMP characters만
 ```
 
-
-
-* 셀레니움에서 요소 찾을때 도움받은 문서 : [xpath 도움](https://blog.daum.net/sualchi/13721873)
-
-* 로그는 log.txt로 따로 찍게 만들었다. (간단한 txt 저장 문법 사용했음)
-
 <br>
 
 ## 폴더 구조
+
+
+
+
+
+
+
+
+
+
+
+옛날거
 
 * [`/.github/workflows/python-package.yml`](./.github/workflows/python-package.yml)
   * CI/CD 구조를 위한 설정
