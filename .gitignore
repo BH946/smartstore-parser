@@ -3,3 +3,5 @@
 logs/
 
 src/db/db_proc.py
+
+downloads/
