@@ -14,6 +14,8 @@ from selenium.webdriver.support import expected_conditions as EC
 # global variable setting
 LISTNAME = os.getenv("LISTNAME").split(",")
 DOWNLOAD_FILES_PATH = os.getenv("DOWNLOAD_FILES_PATH")
+DOWNLOAD_FILES_PATH = os.path.join(os.getcwd(),DOWNLOAD_FILES_PATH)
+urlArr = os.getenv("NAVER_LOGIN_URL").split(",") # [url, name]
 
 #############################################################
 
@@ -23,6 +25,10 @@ DOWNLOAD_FILES_PATH = os.getenv("DOWNLOAD_FILES_PATH")
 #############################################################
 
 def product(driver, idx):
+  wait = WebDriverWait(driver, 10)
+  driver.get(urlArr[0])
+  wait.until(EC.presence_of_element_located((By.ID, "seller-content"))) # 페이지로딩
+  time.sleep(1)
   # (1)브랜드명 기입
   driver.find_element(by=By.CSS_SELECTOR,value='#brand_name').send_keys(LISTNAME[idx])
   # (2)품절, 판매금지 체크 -> 판매중은 기본값으로 이미 체크
@@ -85,6 +91,8 @@ def product(driver, idx):
         nxtPath=os.path.join(DOWNLOAD_FILES_PATH,"스마트스토어상품_" + LISTNAME[idx] + todayDate+".csv")
         os.rename(curPath,nxtPath) # 이름변경
         complete = True # 다운성공
+        logging.debug("스마트스토어 마마미.csv 다운 완료")
+        print("스마트스토어 마마미.csv 다운 완료")
     time.sleep(1)
   return None
 

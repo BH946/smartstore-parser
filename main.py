@@ -1,8 +1,17 @@
 import logging
+from logging import handlers
 import os
 import dotenv
+
+# 최우선 : env 설정, log 설정
 dotenv.load_dotenv()
-logging.basicConfig(level=logging.DEBUG, filename='./logs/dev.log', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s') # 개발용 debug 레벨 사용
+log_handler = handlers.RotatingFileHandler(os.path.join('logs','dev-parser.log'), mode='a', maxBytes=1024*1000, backupCount=5) # 1000KB=1MB 백업5개까지 최대로 Rotate
+log_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+log_handler.setFormatter(log_formatter)
+root_logger=logging.getLogger() # root
+root_logger.setLevel(logging.INFO)
+root_logger.addHandler(log_handler)
+
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
@@ -17,8 +26,8 @@ from src.login.login import login
 chromeOptions = ChromeOptions()
 # chromeOptions.add_argument("window-size=1920x1200") # window-size 설정
 # chromeOptions.add_experimental_option("detach", True) # 브라우저 꺼짐 방지 옵션
-# chromeOptions.add_experimental_option("excludeSwitches", ["enable-logging"]) # 불필요한 에러 메시지 제거코드
-# chromeOptions.add_argument("headless"); # 헤드리스 사용
+chromeOptions.add_experimental_option("excludeSwitches", ["enable-logging"]) # 불필요한 에러 메시지 제거코드
+chromeOptions.add_argument("headless"); # 헤드리스 사용
 chromeOptions.add_argument("disable-infobars") # 정보 표시줄 사용X
 chromeOptions.add_argument("disable-extensions"); # 확장 사용안함
 chromeOptions.add_argument("disable-popup-blocking"); #팝업 X
@@ -32,24 +41,24 @@ chromeService = ChromeService(ChromeDriverManager().install()) # 크롬드라이
 #############################################################
 # global variable setting
 DOWNLOAD_FILES_PATH = os.getenv("DOWNLOAD_FILES_PATH")
+DOWNLOAD_FILES_PATH = os.path.join(os.getcwd(),DOWNLOAD_FILES_PATH)
 urlArr = os.getenv("NAVER_LOGIN_URL").split(",") # [url, name]
 NAVER_ID = os.getenv("NAVER_ID")
 NAVER_PW = os.getenv("NAVER_PW")
 
 #############################################################
 
-# selenium headless background download activate
-def enable_download(driver):
-  logging.debug('selenium headless 백그라운드 다운로드 기능 활성화')
-  driver.command_executor._commands["send_command"] = ("POST", '/session/$sessionId/chromium/send_command')
-  params = {'cmd': 'Page.setDownloadBehavior', 'params': {'behavior': 'allow', 'downloadPath': f'{DOWNLOAD_FILES_PATH}'}}
-  driver.execute("send_command", params)
+# 다운로드 경로설정
+chromeOptions.add_experimental_option("prefs", {
+  "download.default_directory": DOWNLOAD_FILES_PATH,
+  "download.prompt_for_download": False,
+  "download.directory_upgrade": True,
+  "safebrowsing.enabled": True
+})
 
 def main():
-  print("TEST env :"+os.getenv("LOG_FILES_PATH"))
   logging.debug("test dev log")
   driver = webdriver.Chrome(service=chromeService, options=chromeOptions)
-  enable_download(driver) # 다운로드 경로 설정
   driver.maximize_window()
   driver.get_screenshot_as_file("test.png") # test
 
@@ -58,11 +67,12 @@ def main():
 
   # smartstore-products
   product(driver, 0) # 0:mamami, 1:phonefriend
+  print("product 끝")
 
   # web-parse
   parse_mamami(driver)
 
-  logging.debug("파싱이 완료되었습니다. DB를 확인하세요.")
+  logging.info("파싱이 완료되었습니다. DB를 확인하세요.")
   driver.quit()
   
 

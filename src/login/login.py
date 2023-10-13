@@ -49,7 +49,7 @@ def login(driver, urlArr, id, pw):
     driver.find_element(by=By.CLASS_NAME,value="btn_login").click()
     try:
       wait.until(EC.presence_of_element_located((By.CLASS_NAME, "login_form"))) # (2)새로운 기기 등록 여부 확인 new.save
-      driver.find_element(by=By.ID,value="new.save").click()
+      driver.find_element(by=By.ID,value="new.dontsave").click() # 등록X
     except Exception: # 탭 handler 에러도 있어서 그냥 Exception로 처리
       # (2-1)캡차인지 확인
       captchas=driver.find_elements(by=By.ID,value="captcha")
@@ -72,7 +72,7 @@ def login(driver, urlArr, id, pw):
         try:
           # (2-3)새로운 기기 등록 여부 다시 확인
           wait.until(EC.presence_of_element_located((By.CLASS_NAME, "login_form")))
-          driver.find_element(by=By.ID,value="new.save").click()
+          driver.find_element(by=By.ID,value="new.dontsave").click()
         except Exception: pass # 기기 이미 등록
       else:
         pass # 캡차X & 기기 이미 등록
@@ -109,7 +109,13 @@ def login(driver, urlArr, id, pw):
     for i in range(0, 5): 
       driver.get(url)
       time.sleep(1)
-      if driver.current_url.find('sell.smartstore.naver.com/#/products/origin-list')!=-1: break
+      # 혹시나 로그인 안된 경우인지 최종 확인(보호조치나 여러이유로 안될수도 있기때문)
+      if driver.current_url.find('accounts.commerce.naver.com')!=-1:
+        logging.INFO("로그인 실패 -> 사유는 알 수 없으며 보호조치 등 확인 바랍니다.")
+        sys.exit() # 강제종료
+      # 로그인 및 페이지이동 정상이면 바로 break
+      if driver.current_url.find('sell.smartstore.naver.com/#/products/origin-list')!=-1: 
+        break
     # 내용 : 오늘 하루동안 보지않기 체크
     try:
       wait.until(EC.presence_of_element_located((By.CLASS_NAME, "text-sub"))).click()
@@ -128,7 +134,9 @@ def login(driver, urlArr, id, pw):
     # 값 복사는 js가 수월
     driver.execute_script(f"document.getElementById('loginUid').value='{id}'")
     driver.execute_script(f"document.getElementById('loginPassword').value='{pw}'")
-    driver.find_element(by=By.CLASS_NAME, value="designSettingElement button").click()
+    time.sleep(1) # 로그인 클릭이 안먹힐때가 있어서 좀 더 수정
+    btn=driver.find_element(by=By.CLASS_NAME, value="btn-wrapper") # 첫번째꺼
+    btn.find_element(by=By.TAG_NAME, value="button").click()
 
     # 페이지 로딩 대기 - 게시물 로딩을 대기
     wait.until(EC.presence_of_element_located((By.CLASS_NAME, "thumbDiv"))) # tag:div
@@ -153,7 +161,7 @@ def login(driver, urlArr, id, pw):
   # 로그인 세션 저장
   s = requests.Session()
   headers = {
-    'User-Agent' : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36'
+    'User-Agent' : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.5938.149 Safari/537.36'
   }
   s.headers.update(headers)
   for cookie in driver.get_cookies():

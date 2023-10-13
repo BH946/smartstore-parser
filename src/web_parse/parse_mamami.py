@@ -22,6 +22,7 @@ MAMAMI_ID = os.getenv("MAMAMI_ID")
 MAMAMI_PW = os.getenv("MAMAMI_PW")
 LISTNAME = os.getenv("LISTNAME").split(",")
 DOWNLOAD_FILES_PATH = os.getenv("DOWNLOAD_FILES_PATH")
+DOWNLOAD_FILES_PATH = os.path.join(os.getcwd(),DOWNLOAD_FILES_PATH)
 
 errorList = [] # error 모음(log.info) -> 판매중지
 
@@ -39,7 +40,6 @@ errorList = [] # error 모음(log.info) -> 판매중지
 # 2. 재고 기록 -> 동작:모든'data-option-no' 검색 후 data-combined-option-value-no 이것도 모두 검색
 # 2-1. None이면 바로 value, quan..기록
 # 2-2. None이 아니면 위에서 구한 key:value에 매칭되는 value기록 및 quantity 기록
-# (참고) 값 구분에 ",/," 를 사용했음. 평범한 "," 는 제품이름 or 모델명에 사용될까봐
 
 #############################################################
 
@@ -113,44 +113,63 @@ def getOption(s, url):
       else: # key1개... 경우
         keyName[optionKey]=optionName # ex) '14724396':'블랙'
   #
-  # 2. 재고 기록 -> 동작:'data-option-no' 검색
+  # 2. 재고 기록 -> 동작:'data-option-no' 검색 (참고로 옵션3의 경우 data-option-no 만 존재)
+  optionName3=[]
   for i in range(0,optionCount):
+    # 옵션1,2 까지는 알아서 합쳐서 나오지만
+    # 옵션3의 경우 다르게 처리해야하므로 따로 처리.. ex) '블랙,18mm,선택안함' (옵션1,2,3 합)
     innerBox = stockOptions[i]
     options = innerBox.find_all('div', attrs={'class':'custom-select-option'}) 
     for option in options: # data-option-no 검색 먼저
-      optionKey = option.get('data-option-no') # 실체 유무에만 사용
+      optionKey = option.get('data-option-no') # 옵션인지 유무에 사용
       optionName = option.get('data-option-value')
-      if optionKey is None:
+      if optionKey is None: # None이면 사용하는 옵션이 아닌것 ex)선택하세요.
         continue
       optionKey = option.get('data-combined-option-value-no')
       # 재고수 기록
       optionStock = option.get('data-option-quantity') 
       if optionStock is None:
         optionStock = '-1'
-      # optionName 업데이트
-      if optionKey is not None:
-        # 이미 앞에서 key:name 다 구해놨기때문에 매칭 안될수가 없음(안된다면 에러)
-        optionName = ""
-        keySplit = [optionKey] # init
-        if optionKey.find(',')!=-1: # key여러개... 경우
-          keySplit = optionKey.split(',')
-        for key in keySplit:
-          optionName += keyName[key]
-          optionName += ",/," # 혹시나 이름에 , 가 들어갈수도있으니 ,/,사용
-        optionName = optionName[:-3] # 끝에 ",/," 제거
-      optionArr.append([optionName, optionStock])
+      if i<2: # (1)옵션1,2까지 optionKey 활용됨
+        # optionName 업데이트
+        if optionKey is not None:
+          # 이미 앞에서 key:name 다 구해놨기때문에 매칭 안될수가 없음(안된다면 에러)
+          optionName = ""
+          keySplit = [optionKey] # init
+          if optionKey.find(',')!=-1: # key여러개... 경우
+            keySplit = optionKey.split(',')
+          for key in keySplit:
+            optionName += keyName[key]
+            optionName += "," # 옵션명은 ","로 구별해야함
+          optionName = optionName[:-1] # 끝에 "," 제거
+        optionArr.append([optionName, optionStock])
+      elif i==2:
+        # (2)예외처리
+        # 옵션3개인 경우 optionArr에 현재옵션 이어붙이고 무조건 재고는 -1로 기록    
+        # 이로직에서 하기는 어려워서 우선 이름만 따로 기록하고 탈출
+        optionName3.append([optionName,optionStock])
+  # (2)예외처리 -> 옵션3 합치기
+  if optionCount==3:
+    optionArrTemp=optionArr
+    optionArr=[]
+    for i in range(0, len(optionArrTemp)):
+      for j in range(0, len(optionName3)):
+        name = optionArrTemp[i][0] + ',' + optionName3[j][0]
+        stock = optionName3[j][1] # 재고는 옵션3 재고로 덮어쓰기
+        optionArr.append([name,stock])
   return optionArr
   
 
 def getOptions(driver, s): # 재고 파싱
   wait = WebDriverWait(driver, 10) # 대기10초 설정
-  productList = []; itemList = []
+  itemList = []
   page = 1
   while(True):
+    productList = [] # init시점
     driver.get(f"{BASEURL}/home?productListPage={page}")
     try:
       wait.until(EC.presence_of_element_located((By.CLASS_NAME, "thumbDiv"))) # tag:div
-    except TimeoutError:
+    except Exception:
       break # 페이지 끝
     #
     # 1. 제품명, url 먼저 파싱
@@ -171,9 +190,11 @@ def getOptions(driver, s): # 재고 파싱
       itemList.append([name, model, options, url])
     #
     logging.info(f'{page}페이지 추출 완료')
-    if page == 1: # 테스트용! (주석필수)
-      break
+    print(f'{page}페이지 추출 완료')
+    # if page == 2: # 테스트용! (주석필수)
+    #   break
     page += 1
+  print(f'{page-1}페이지까지 추출완료')
   return itemList
 
 
@@ -200,17 +221,27 @@ def parse_mamami(driver):
   sql = "delete from mamami_item"
   cur.execute(sql)
   db.commit() # 커밋시점에 삭제
+  print("db삭제")
   # (4-2) insert
   for i in range(0, len(results)):
     result = results[i]
     sql=f"insert into mamami_item(mamami_item_id, name, model, status, url, item_id) values({i+1},'{result[0]}','{result[1]}','{result[2]}','{result[3]}','{result[4]}')"
     cur.execute(sql)
-    for option in result[5]:
-      opts = option[0].replace(",/,", ",") # "18mm,블랙" 이런식으로 저장(나중에 이 형태 사용됨)
+    db.commit() # 커밋해야 아래 옵션들 외래키 가능!
+    for option in result[5]: # 옵션은 무조건 존재!
+      opts = option[0].replace(",/,", ",") # "18mm,블랙" 이런식으로 저장 -> 우선 ","형태로 미리 바꿔두겠음. 옵션명에 "," 가들어간건 애초에 사용안할거라서.
       stock = option[1]
-      if option[1] == -1: stock=999 # -1은 999재고로 사용할거라 이 형태 저장
+      if option[1] == '-1': stock=999 # -1은 999재고로 사용할거라 이 형태 저장
       sqlPart=f"insert into mamami_item_part(mamami_item_id,option_name,stock) values({i+1},'{opts}',{stock})"
-      cur.execute(sqlPart)
+      try:
+        cur.execute(sqlPart)
+      except:
+        # 옵션명 잘못받은 상품인것 -> 제거해주자
+        print(f"아마 옵션명 잘못입력 상품.. : {result}")
+        errorList.append(result)
+        break # 다음상품으로 넘어가자
   db.commit() # insert 쿼리 전송
+  print("db추가")
+  logging.info(f"errorList : {errorList}")
   db.close()
   return None
