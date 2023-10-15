@@ -12,6 +12,8 @@ root_logger=logging.getLogger() # root
 root_logger.setLevel(logging.INFO)
 root_logger.addHandler(log_handler)
 
+from pytz import timezone
+from datetime import datetime
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
@@ -45,6 +47,7 @@ DOWNLOAD_FILES_PATH = os.path.join(os.getcwd(),DOWNLOAD_FILES_PATH)
 urlArr = os.getenv("NAVER_LOGIN_URL").split(",") # [url, name]
 NAVER_ID = os.getenv("NAVER_ID")
 NAVER_PW = os.getenv("NAVER_PW")
+LISTNAME = os.getenv("LISTNAME").split(",")
 
 #############################################################
 
@@ -62,19 +65,48 @@ def main():
   driver.maximize_window()
   driver.get_screenshot_as_file("test.png") # test
 
-  # 네이버 로그인(2차 인증 포함) - 로그인된 driver 계속 사용예정
-  login(driver, urlArr, NAVER_ID, NAVER_PW)
+  # (디버깅도움)금일의 product.csv 존재여부 파악
+  count = -1
+  count = findProduct() # 첨부터 실행을 반드시 하려면 이곳 주석
+  if count == len(LISTNAME):
+    logging.info(f"이미 product들이 존재하므로 parse로 넘어갑니다.")
+    # web-parse
+    logging.info("parse_mamami() 함수 입장")
+    parse_mamami(driver)
+    logging.info("parse_mamami() 함수 끝")
+  else:
+    # 네이버 로그인(2차 인증 포함) - 로그인된 driver
+    logging.info("login() 함수 입장")
+    login(driver, urlArr, NAVER_ID, NAVER_PW)
+    logging.info("login() 함수 끝")
 
-  # smartstore-products
-  product(driver, 0) # 0:mamami, 1:phonefriend
-  print("product 끝")
+    # smartstore-products
+    logging.info("product() 함수 입장")
+    product(driver, 0) # 0:mamami, 1:phonefriend
+    logging.info("product() 함수 끝")
 
-  # web-parse
-  parse_mamami(driver)
+    # web-parse
+    logging.info("parse_mamami() 함수 입장")
+    parse_mamami(driver)
+    logging.info("parse_mamami() 함수 끝")
 
   logging.info("파싱이 완료되었습니다. DB를 확인하세요.")
   driver.quit()
-  
+
+
+def findProduct():
+  count=0
+  todayDate = datetime.now(timezone('Asia/Seoul')).strftime("%Y%m%d")
+  for lstName in LISTNAME:
+    fileList = os.listdir(DOWNLOAD_FILES_PATH)
+    fileListCsv = [file for file in fileList if file.endswith('.csv')]
+    fileName = ""
+    for file in fileListCsv:
+      fileName = file
+      if (fileName.find("스마트스토어상품_" + lstName + todayDate) != -1):
+        count+=1
+  return count
+
 
 if __name__ == "__main__":
   main() # main 함수
