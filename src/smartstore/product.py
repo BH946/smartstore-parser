@@ -66,17 +66,13 @@ def product(driver, idx):
     curPanelTitle = driver.find_element(by=By.CLASS_NAME,value="panel-title").text
     if prevPanelTitle != curPanelTitle: # 검색한것 로딩됐는지 확인
       panel=driver.find_elements(by=By.CLASS_NAME,value="panel-heading")[0]
-      dropdown=panel.find_elements(by=By.CLASS_NAME,value="selectize-dropdown-content")[2] # 3번째 dropdown
-      parent = dropdown.find_element(By.XPATH, '..') # 부모태그
+      dropdown3=panel.find_elements(by=By.CLASS_NAME,value="selectize-dropdown-content")[2] # 3번째 dropdown
+      parent = dropdown3.find_element(By.XPATH, '..') # 부모태그
       parent = parent.find_element(By.XPATH, '..') # 부모의 부모태그
       parent.click() # class : selectize-control excel ng-pristine 
       time.sleep(1)
-      options = dropdown.find_elements(by=By.CLASS_NAME,value="option")
-      for option in options:
-        if option.get_attribute('data-value') == 'PRODUCT_DOWNLOAD':
-          option.click()
-          break
-      break
+      option = dropdown3.find_element(by=By.XPATH,value='//*[@data-value="PRODUCT_DOWNLOAD"]') # 제품 다운로드
+      driver.execute_script("arguments[0].click();", option) # JS로 클릭
     time.sleep(1)
   # (6)csv 다운로드 완료 대기
   complete = False
