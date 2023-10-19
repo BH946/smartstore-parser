@@ -221,6 +221,9 @@ def parse_mamami(driver):
   sql = "delete from mamami_item"
   cur.execute(sql)
   db.commit() # 커밋시점에 삭제
+  sql = "delete from mamami_item_part"
+  cur.execute(sql)
+  db.commit() # 커밋시점에 삭제
   print("db삭제")
   # (4-2) insert
   for i in range(0, len(results)):

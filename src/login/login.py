@@ -74,10 +74,10 @@ def login(driver, urlArr, id, pw):
           wait.until(EC.presence_of_element_located((By.CLASS_NAME, "login_form")))
           driver.find_element(by=By.ID,value="new.dontsave").click()
         except Exception: pass # 기기 이미 등록
-      else:
-        pass # 캡차X & 기기 이미 등록
-    # 최대 30초 대기 - 로그인
-    for i in range(0,30):
+      else: 
+        pass # 캡차X & 기기 이미 등록 & 2단계 휴대폰 인증도 아님
+    # 최대 180초 대기 - 로그인 + 휴대폰 2단계 인증 추가로 인해 대기시간 3분으로 늘리겠음
+    for i in range(0,180):
       if len(driver.window_handles)==1: break
       time.sleep(1)
     driver.switch_to.window(driver.window_handles[-1]) # 탭이동
