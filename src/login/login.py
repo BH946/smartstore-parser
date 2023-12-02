@@ -52,30 +52,33 @@ def login(driver, urlArr, id, pw):
       driver.find_element(by=By.ID,value="new.dontsave").click() # 등록X
     except Exception: # 탭 handler 에러도 있어서 그냥 Exception로 처리
       # (2-1)캡차인지 확인
-      captchas=driver.find_elements(by=By.ID,value="captcha")
-      if len(captchas)==1:
-        # (2-2)캡차처리
-        logging.info("캡차 처리 시작")
-        # 캡처 -> 메일전송 -> 값 반환
-        cap=driver.find_element(by=By.CLASS_NAME,value="captcha_wrap")
-        cap.screenshot("./downloads/captcha.png")
-        time.sleep(3) # 이미지 생성 대기
-        # 메일 쓰기 -> 캡차 이미지 보내기
-        auth_mail_write()
-        # 메일 읽기 -> 캡차 풀이 응답 읽기
-        answer = auth_mail_read()
-        # 다시로그인 시도
-        driver.execute_script(f"document.getElementById('id').value='{id}'")
-        driver.execute_script(f"document.getElementById('pw').value='{pw}'")
-        captchas[0].send_keys(answer)
-        driver.find_element(by=By.CLASS_NAME,value="btn_login").click()
-        try:
-          # (2-3)새로운 기기 등록 여부 다시 확인
-          wait.until(EC.presence_of_element_located((By.CLASS_NAME, "login_form")))
-          driver.find_element(by=By.ID,value="new.dontsave").click()
-        except Exception: pass # 기기 이미 등록
-      else: 
-        pass # 캡차X & 기기 이미 등록 & 2단계 휴대폰 인증도 아님
+      try:
+        captchas=driver.find_elements(by=By.ID,value="captcha")
+      except Exception:
+        pass # 캡차X & 기기 이미 등록
+      else:
+        if len(captchas)==1:
+          # (2-2)캡차처리
+          logging.info("캡차 처리 시작")
+          # 캡처 -> 메일전송 -> 값 반환
+          cap=driver.find_element(by=By.CLASS_NAME,value="captcha_wrap")
+          cap.screenshot("./downloads/captcha.png")
+          time.sleep(3) # 이미지 생성 대기
+          # 메일 쓰기 -> 캡차 이미지 보내기
+          auth_mail_write()
+          # 메일 읽기 -> 캡차 풀이 응답 읽기
+          answer = auth_mail_read()
+          # 다시로그인 시도
+          driver.execute_script(f"document.getElementById('id').value='{id}'")
+          driver.execute_script(f"document.getElementById('pw').value='{pw}'")
+          captchas[0].send_keys(answer)
+          driver.find_element(by=By.CLASS_NAME,value="btn_login").click()
+          try:
+            # (2-3)새로운 기기 등록 여부 다시 확인
+            wait.until(EC.presence_of_element_located((By.CLASS_NAME, "login_form")))
+            driver.find_element(by=By.ID,value="new.dontsave").click()
+          except Exception: pass # 기기 이미 등록
+          
     # 최대 180초 대기 - 로그인 + 휴대폰 2단계 인증 추가로 인해 대기시간 3분으로 늘리겠음
     for i in range(0,180):
       if len(driver.window_handles)==1: break
