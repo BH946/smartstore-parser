@@ -72,9 +72,9 @@ def getProduct():
   todayDate = datetime.now(timezone('Asia/Seoul')).strftime("%Y%m%d")
   fileName="스마트스토어상품_" + LISTNAME[0] + todayDate+".csv"
   df = pd.read_csv(os.path.join(DOWNLOAD_FILES_PATH,fileName))
-  # [상품명, 모델명, 판매상태, 상품번호 기록] 형태로 반환할 것
+  # [상품명, 카탈로그명, 판매상태, 상품번호 기록] 형태로 반환할 것
   names=df["상품명"]
-  models=df["모델명"]
+  models=df["카탈로그명"]
   sellStates=df["판매상태"]
   itemIds=df["상품번호(스마트스토어)"]
   datas=[]

@@ -71,9 +71,8 @@ def product(driver, idx):
       parent = parent.find_element(By.XPATH, '..') # 부모의 부모태그
       parent.click() # class : selectize-control excel ng-pristine 
       time.sleep(1)
-      option = dropdown3.find_element(by=By.XPATH,value='//*[@data-value="PRODUCT_DOWNLOAD"]') # 수정양식 업로드
+      option = dropdown3.find_element(by=By.XPATH,value='//*[@data-value="PRODUCT_DOWNLOAD"]') # 제품 다운로드
       driver.execute_script("arguments[0].click();", option) # JS로 클릭
-      break
     time.sleep(1)
   # (6)csv 다운로드 완료 대기
   complete = False
