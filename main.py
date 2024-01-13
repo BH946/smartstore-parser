@@ -1,6 +1,9 @@
+print("test")
 import logging
 from logging import handlers
 import os
+import pathlib
+os.chdir(pathlib.Path(__file__).parent.absolute())
 import dotenv
 
 # 최우선 : env 설정, log 설정
