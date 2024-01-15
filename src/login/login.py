@@ -89,6 +89,7 @@ def login(driver, urlArr, id, pw):
     if driver.current_url.find('accounts.commerce.naver.com')==-1:
       # 이미 인증 완료된 상태
       logging.info("스마트스토어 2단계가 이미 인증되었습니다.")
+      driver.get_screenshot_as_file("2단계 인증.png") # login test
       pass
     else:
       # 인증 해야하는 상태
@@ -112,13 +113,7 @@ def login(driver, urlArr, id, pw):
     for i in range(0, 5): 
       driver.get(url)
       time.sleep(1)
-      # 혹시나 로그인 안된 경우인지 최종 확인(보호조치나 여러이유로 안될수도 있기때문)
-      if driver.current_url.find('accounts.commerce.naver.com')!=-1:
-        logging.INFO("로그인 실패 -> 사유는 알 수 없으며 보호조치 등 확인 바랍니다.")
-        sys.exit() # 강제종료
-      # 로그인 및 페이지이동 정상이면 바로 break
-      if driver.current_url.find('sell.smartstore.naver.com/#/products/origin-list')!=-1: 
-        break
+      if driver.current_url.find('sell.smartstore.naver.com/#/products/origin-list')!=-1: break
     # 내용 : 오늘 하루동안 보지않기 체크
     try:
       wait.until(EC.presence_of_element_located((By.CLASS_NAME, "text-sub"))).click()
