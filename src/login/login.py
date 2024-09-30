@@ -79,8 +79,10 @@ def login(driver, urlArr, id, pw):
             driver.find_element(by=By.ID,value="new.dontsave").click()
           except Exception: pass # 기기 이미 등록
           
-    # 최대 180초 대기 - 로그인 + 휴대폰 2단계 인증 추가로 인해 대기시간 3분으로 늘리겠음
-    for i in range(0,180):
+    # 최대 180초 대기 - 1차 로그인 + 혹시나 네이버 앱 2단계 인증 일 수 있어서 대기시간 최대 3분 설정
+    cnt = 0
+    while(True):
+      if cnt == 180: break
       if len(driver.window_handles)==1: break
       time.sleep(1)
     driver.switch_to.window(driver.window_handles[-1]) # 탭이동
@@ -88,7 +90,7 @@ def login(driver, urlArr, id, pw):
     time.sleep(10) # 페이지 redirect 대기(생각보다 오래걸려서 꼭 대기)
     if driver.current_url.find('accounts.commerce.naver.com')==-1:
       # 이미 인증 완료된 상태
-      logging.info("스마트스토어 2단계가 이미 인증되었습니다.")
+      logging.info("스마트스토어 2단계가 이미 인증되었습니다. 또는 네이버앱으로 인증 되었습니다.")
       driver.get_screenshot_as_file("2단계 인증.png") # login test
       pass
     else:
