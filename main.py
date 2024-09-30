@@ -1,4 +1,4 @@
-print("test")
+print("start") # 디버깅은 헤드리스(자유), main쪽 한줄 주석 하기, .env 본인 id,pw로 수정
 import logging
 from logging import handlers
 import os
@@ -32,7 +32,7 @@ chromeOptions = ChromeOptions()
 # chromeOptions.add_argument("window-size=1920x1200") # window-size 설정
 # chromeOptions.add_experimental_option("detach", True) # 브라우저 꺼짐 방지 옵션
 chromeOptions.add_experimental_option("excludeSwitches", ["enable-logging"]) # 불필요한 에러 메시지 제거코드
-chromeOptions.add_argument("headless"); # 헤드리스 사용
+# chromeOptions.add_argument("headless"); # 헤드리스 사용
 chromeOptions.add_argument("disable-infobars") # 정보 표시줄 사용X
 chromeOptions.add_argument("disable-extensions"); # 확장 사용안함
 chromeOptions.add_argument("disable-popup-blocking"); #팝업 X

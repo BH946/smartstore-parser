@@ -31,8 +31,19 @@
 
 ## 폴더 구조
 
+**.gitignore 로 숨긴 파일**
+
+```
+*.env
+logs/
+src/db/db_proc.py
+downloads/
+```
+
 * [`/main.py`](./main.py)
   * 메인함수 실행 파일
+* [`/.env`](./.env)
+  * 보안을 위해 파일은 숨겼지만, 실제로 이 파일 필수
 * [`/src/db`](./src/db)
   * 파일은 숨겼지만, 실제로 db에 접속하는 py를 만들어 둠
 * [`/src/login/auth_mail.py`](./src/login/auth_mail.py)

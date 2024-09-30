@@ -87,7 +87,7 @@ def login(driver, urlArr, id, pw):
       time.sleep(1)
     driver.switch_to.window(driver.window_handles[-1]) # 탭이동
     # (3)2단계 인증 - "휴대폰방식", 동일IP 접속은 90일까지 인증 유지
-    time.sleep(10) # 페이지 redirect 대기(생각보다 오래걸려서 꼭 대기)
+    time.sleep(12) # 페이지 redirect 대기(생각보다 오래걸려서 꼭 대기) + 본주 휴대폰 인증하면 애초에 통과 됨(12초 대기)
     if driver.current_url.find('accounts.commerce.naver.com')==-1:
       # 이미 인증 완료된 상태
       logging.info("스마트스토어 2단계가 이미 인증되었습니다. 또는 네이버앱으로 인증 되었습니다.")
@@ -102,7 +102,7 @@ def login(driver, urlArr, id, pw):
       parent.click() # 이메일 인증 토글 활성화
       parent.find_element(by=By.TAG_NAME,value="button").click() # 인증버튼
       wait.until(EC.presence_of_element_located((By.CLASS_NAME, "icon"))).click() # 팝업닫기
-      input=parent.find_elements(by=By.TAG_NAME,value="input")[-1]
+      input=parent.find_elements(by=By.TAG_NAME,value="input")[-1] # 인증번호 입력란
       # (3-2)메일 읽기
       # 메일 읽기 -> 날라온 인증번호 읽기 (물론 사용자가 답장으로 다시 인증번호 적어서 보내야함)
       answer = auth_mail_read()
@@ -111,6 +111,7 @@ def login(driver, urlArr, id, pw):
       time.sleep(1)
       driver.find_elements(by=By.TAG_NAME,value="button")[-1].click() # 확인
       time.sleep(1)
+
     # 최대 5번 홈페이지 새로고침(팝업창이 많아서 그럼)
     for i in range(0, 5): 
       driver.get(url)

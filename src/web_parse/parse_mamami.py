@@ -207,15 +207,16 @@ def parse_mamami(driver):
   # 1. 홈페이지 전체 데이터 파싱 및 메모리기록(itemList)
   itemList = getOptions(driver, session) # [[name, model, options, url],]
   # print(itemList)
-
+  #
   # 2. product csv 읽고 메모리 기록(prodList)
   prodList = getProduct() # [상품명, 모델명, 판매상태, 상품번호(스마트스토어)]
   # print(prodList) 
-
+  #
   # 3. itemList,prodList를 모델명(pk)비교 및 기록
   # => prodList 순서대로!!, 상품번호 필수 기록!!
+  # => 파싱 문제있는건 errorList(전역)에 기록: len(errorList)+len(results)=len(prodList)
   results = getCompare(itemList, prodList) # [name, model, sellState, url, itemId, options] -> options:[[옵션,재고],]
-
+  #
   # 4. 3에서 구한 값 db 저장(delete -> insert)
   # (4-1) delete
   sql = "delete from mamami_item"
@@ -246,5 +247,10 @@ def parse_mamami(driver):
   db.commit() # insert 쿼리 전송
   print("db추가")
   logging.info(f"errorList : {errorList}")
-  db.close()
+  # db잘 넣었나 출력(debug)
+  sql='select * from mamami_item a join mamami_item_part b on a.mamami_item_id=b.mamami_item_id order by a.mamami_item_id asc LIMIT 10000'
+  cur.execute(sql)
+  dbData = cur.fetchall() # 결과 가져오기
+  print(dbData)
+  db.close() # 종료
   return None
