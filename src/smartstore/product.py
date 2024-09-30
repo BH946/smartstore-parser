@@ -26,8 +26,11 @@ urlArr = os.getenv("NAVER_LOGIN_URL").split(",") # [url, name]
 
 def product(driver, idx):
   wait = WebDriverWait(driver, 10)
-  driver.get(urlArr[0])
+  driver.get(urlArr[0]) 
   wait.until(EC.presence_of_element_located((By.ID, "seller-content"))) # 페이지로딩
+  time.sleep(1)
+  # 오른쪽으로 스크롤을 끝까지 하기
+  driver.execute_script("window.scrollTo(document.body.scrollWidth, 0);")
   time.sleep(1)
   # (1)브랜드명 기입
   driver.find_element(by=By.CSS_SELECTOR,value='#brand_name').send_keys(LISTNAME[idx])
@@ -36,6 +39,7 @@ def product(driver, idx):
   for label in searchLabel:
     if label.text == "품절" or label.text == "판매중지":
       label.click()
+      time.sleep(0.5) # 너무 빠르면 웹에서 동작 씹히길래 추가
   # (3)날짜 전체 선택 및 확인
   searchButtons=driver.find_elements(by=By.TAG_NAME,value="button")
   for i in range(0, len(searchButtons)):

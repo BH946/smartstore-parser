@@ -1,4 +1,4 @@
-print("test")
+print("start") # 디버깅은 헤드리스(자유), main쪽 한줄 주석 하기, .env 본인 id,pw로 수정
 import logging
 from logging import handlers
 import os
@@ -32,7 +32,7 @@ chromeOptions = ChromeOptions()
 # chromeOptions.add_argument("window-size=1920x1200") # window-size 설정
 # chromeOptions.add_experimental_option("detach", True) # 브라우저 꺼짐 방지 옵션
 chromeOptions.add_experimental_option("excludeSwitches", ["enable-logging"]) # 불필요한 에러 메시지 제거코드
-chromeOptions.add_argument("headless"); # 헤드리스 사용
+# chromeOptions.add_argument("headless"); # 헤드리스 사용
 chromeOptions.add_argument("disable-infobars") # 정보 표시줄 사용X
 chromeOptions.add_argument("disable-extensions"); # 확장 사용안함
 chromeOptions.add_argument("disable-popup-blocking"); #팝업 X
@@ -63,38 +63,43 @@ chromeOptions.add_experimental_option("prefs", {
 })
 
 def main():
-  logging.debug("test dev log")
-  driver = webdriver.Chrome(service=chromeService, options=chromeOptions)
-  driver.maximize_window()
-  driver.get_screenshot_as_file("test.png") # test
+  try:
+    logging.debug("test dev log")
+    driver = webdriver.Chrome(service=chromeService, options=chromeOptions)
+    driver.maximize_window()
+    driver.get_screenshot_as_file("test.png") # test
 
-  # (디버깅도움)금일의 product.csv 존재여부 파악
-  count = -1
-  count = findProduct() # 첨부터 실행을 반드시 하려면 이곳 주석
-  if count == len(LISTNAME):
-    logging.info(f"이미 product들이 존재하므로 parse로 넘어갑니다.")
-    # web-parse
-    logging.info("parse_mamami() 함수 입장")
-    parse_mamami(driver)
-    logging.info("parse_mamami() 함수 끝")
-  else:
-    # 네이버 로그인(2차 인증 포함) - 로그인된 driver
-    logging.info("login() 함수 입장")
-    login(driver, urlArr, NAVER_ID, NAVER_PW)
-    logging.info("login() 함수 끝")
+    # (디버깅도움)금일의 product.csv 존재여부 파악
+    count = -1
+    # count = findProduct() # 첨부터 실행을 반드시 하려면 이곳 주석
+    if count == len(LISTNAME):
+      logging.info(f"이미 product들이 존재하므로 parse로 넘어갑니다.")
+      # web-parse
+      logging.info("parse_mamami() 함수 입장")
+      parse_mamami(driver)
+      logging.info("parse_mamami() 함수 끝")
+    else:
+      # 네이버 로그인(2차 인증 포함) - 로그인된 driver
+      logging.info("login() 함수 입장")
+      login(driver, urlArr, NAVER_ID, NAVER_PW)
+      logging.info("login() 함수 끝")
 
-    # smartstore-products
-    logging.info("product() 함수 입장")
-    product(driver, 0) # 0:mamami, 1:phonefriend
-    logging.info("product() 함수 끝")
+      # smartstore-products
+      logging.info("product() 함수 입장")
+      product(driver, 0) # 0:mamami, 1:phonefriend
+      logging.info("product() 함수 끝")
 
-    # web-parse
-    logging.info("parse_mamami() 함수 입장")
-    parse_mamami(driver)
-    logging.info("parse_mamami() 함수 끝")
+      # web-parse
+      logging.info("parse_mamami() 함수 입장")
+      parse_mamami(driver)
+      logging.info("parse_mamami() 함수 끝")
 
-  logging.info("파싱이 완료되었습니다. DB를 확인하세요.")
-  driver.quit()
+    logging.info("파싱이 완료되었습니다. DB를 확인하세요.")
+  except Exception as e:
+    logging.error(f"예외 발생: {e}", exc_info=True) # exc_info: stack 트레이스 정보도 포함
+    print(f"예외 발생(자세한 내용은 로그 참고): {e}")
+  finally:
+    driver.quit() # 항상 실행
 
 
 def findProduct():
