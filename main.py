@@ -41,6 +41,7 @@ chromeOptions.add_argument("disable-gpu");	# gpu 비활성화
 chromeOptions.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.5938.149 Safari/537.36") # 사용자인척 위장
 chromeOptions.add_argument('no-sandbox')
 chromeOptions.add_argument('disable-dev-shm-usage')
+chromeOptions.add_argument('--remote-debugging-pipe') # DevToolsActivePort 에러 해결을 위해..(아마 이거 사용 안하게 하는거일걸?)
 chromeService = ChromeService(ChromeDriverManager().install()) # 크롬드라이버 자동
 
 #############################################################
