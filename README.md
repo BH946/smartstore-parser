@@ -8,7 +8,9 @@
 
 **아나콘다 사용 -> conda 명령어 사용(conda list, conda install... 등)**
 
-* `python : 3.11.5`
+* `python : 3.11.5` -> 본섭은 3.8 사용 중! (로컬이 3.11 사용 중)
+  * 아나콘다로 여러 버전 다운 받음 (로컬)
+  * 로컬에서 F1 -> Select Interpreter 파이썬 버전 변경하고 bash가 아닌 일반 CLI로 켜야 터미널에 파이썬 자동 적용 됨.
 * `beautifulsoup4 : 4.12.2(최신)`
 * `requests : 2.31.0`
 * `selenium : 4.9.0`
