@@ -32,7 +32,7 @@ chromeOptions = ChromeOptions()
 # chromeOptions.add_argument("window-size=1920x1200") # window-size 설정
 # chromeOptions.add_experimental_option("detach", True) # 브라우저 꺼짐 방지 옵션
 chromeOptions.add_experimental_option("excludeSwitches", ["enable-logging"]) # 불필요한 에러 메시지 제거코드
-chromeOptions.add_argument("headless"); # 헤드리스 사용
+chromeOptions.add_argument("headless=old"); # 헤드리스 사용 (old로 기존 헤드리스 사용)
 chromeOptions.add_argument("disable-infobars") # 정보 표시줄 사용X
 chromeOptions.add_argument("disable-extensions"); # 확장 사용안함
 chromeOptions.add_argument("disable-popup-blocking"); #팝업 X
@@ -41,8 +41,12 @@ chromeOptions.add_argument("disable-gpu");	# gpu 비활성화
 chromeOptions.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.5938.149 Safari/537.36") # 사용자인척 위장
 chromeOptions.add_argument('no-sandbox')
 chromeOptions.add_argument('disable-dev-shm-usage')
-chromeOptions.add_argument('--remote-debugging-pipe') # DevToolsActivePort 에러 해결을 위해..(아마 이거 사용 안하게 하는거일걸?)
-chromeService = ChromeService(ChromeDriverManager().install()) # 크롬드라이버 자동
+chromedriverPath = ChromeDriverManager().install()
+# chromedriver 경로 확인 및 명시적으로 실행 파일 경로 지정 -> THIRD_PARTY_NOTICES.chromedriver 로 선택되는 문제 해결
+if os.path.isfile(os.path.join(os.path.dirname(chromedriverPath), "chromedriver")):
+    chromedriverPath = os.path.join(os.path.dirname(chromedriverPath), "chromedriver")
+chromeService = ChromeService(chromedriverPath) # 크롬드라이버 자동
+print(f"Installed ChromeDriver path: {chromedriverPath}")
 
 #############################################################
 # global variable setting
